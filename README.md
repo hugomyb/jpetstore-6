@@ -52,7 +52,7 @@ Ce projet utilise une pipeline CI/CD complète avec GitHub Actions pour tester, 
 
 ---
 
-## 📦 Docker
+## Docker
 
 L’image est construite à chaque push et publiée automatiquement sur Docker Hub :
 
@@ -60,4 +60,6 @@ L’image est construite à chaque push et publiée automatiquement sur Docker H
 docker pull hugomayo7/hugo-jpetstore:latest
 ```
 
+## SonarCloud
+![SonarCloud Dashboard](image.png)
 ---
