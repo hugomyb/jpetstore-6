@@ -62,4 +62,11 @@ docker pull hugomayo7/hugo-jpetstore:latest
 
 ## SonarCloud
 ![SonarCloud Dashboard](image.png)
+
+## Trivy 
+![Trivy results](image-1.png)
+
+## Checkov
+![Checkov results](image-2.png)
+
 ---
