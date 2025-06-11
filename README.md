@@ -4,7 +4,7 @@ Ce projet utilise une pipeline CI/CD complète avec GitHub Actions pour tester, 
 
 ---
 
-## ✅ Étapes automatisées dans la CI
+## Étapes automatisées dans la CI
 
 1. **Checkout du code**
 2. **Installation de Java (JDK 17 via Zulu)**
@@ -19,28 +19,28 @@ Ce projet utilise une pipeline CI/CD complète avec GitHub Actions pour tester, 
 
 ---
 
-## 🐛 Problèmes rencontrés
+## Problèmes rencontrés
 
-### ❌ Tests qui échouaient dans GitHub Actions
+### Tests qui échouaient dans GitHub Actions
 - **Cause** : `mvn verify` arrêtait Tomcat **avant** que Selenide exécute les tests.
 - **Fix** : utilisation directe de `mvn test`, qui laisse Cargo actif.
 
-### ❌ Échec de l’analyse SonarCloud
+### Échec de l’analyse SonarCloud
 - **Cause** : erreur `sonar.java.binaries missing` car les `.class` n’étaient pas présents.
 - **Fix** : ajout d’une étape `mvn compile` et propriété `-Dsonar.java.binaries=target`.
 
-### ❌ `sonar.login` déprécié
+### `sonar.login` déprécié
 - **Fix** : remplacement par `sonar.token`.
 
-### ❌ Checkov bloquait la CI
+### Checkov bloquait la CI
 - **Fix** : ajout de `continue-on-error: true` pour rendre Checkov non bloquant.
 
-### ❌ Avertissement sur l’action Sonar dépréciée
+### Avertissement sur l’action Sonar dépréciée
 - **Fix** : remplacement de `sonarcloud-github-action` par `sonarqube-scan-action@v5.0.0`.
 
 ---
 
-## 🔐 Secrets GitHub requis
+## Secrets GitHub requis
 
 | Secret                | Description                                |
 |-----------------------|--------------------------------------------|
@@ -57,7 +57,7 @@ Ce projet utilise une pipeline CI/CD complète avec GitHub Actions pour tester, 
 L’image est construite à chaque push et publiée automatiquement sur Docker Hub :
 
 ```
-docker pull <utilisateur_dockerhub>/hugo-jpetstore:latest
+docker pull hugomayo7/hugo-jpetstore:latest
 ```
 
 ---
