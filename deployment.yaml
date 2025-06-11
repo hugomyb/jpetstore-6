@@ -3,32 +3,46 @@ kind: Deployment
 metadata:
   name: petshop
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: petshop
-  replicas: 1 
-  template: 
+  template:
     metadata:
       labels:
         app: petshop
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
+        fsGroup: 2000
       containers:
-      - name: petshop
-        image: smontri/petshop:latest
-        ports:
-        - containerPort: 8080
-        imagePullPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: petshop
-spec:
-  type: LoadBalancer
-  selector:
-    app: petshop
-  ports:
-  - name: http
-    protocol: TCP
-    port: 80
-    targetPort: 8080
+        - name: petshop
+          image: smontri/petshop:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 3
