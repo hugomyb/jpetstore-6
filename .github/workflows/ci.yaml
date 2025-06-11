@@ -3,25 +3,19 @@ name: Java CI
 on: [push, pull_request]
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-        java: [11, 17, 20, 21-ea]
-        distribution: ['zulu']
-      fail-fast: false
-      max-parallel: 4
-    name: Test JDK ${{ matrix.java }}, ${{ matrix.os }}
+  ci:
+    runs-on: ubuntu-latest
+    name: Build, Test, Analyse & Docker
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ matrix.java }}
-          distribution: ${{ matrix.distribution }}
+          java-version: 17
+          distribution: 'zulu'
 
       - name: Cache local Maven m2
         uses: actions/cache@v3
@@ -30,8 +24,8 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Test with Maven
-        run: ./mvnw test -B -V --no-transfer-progress -D"license.skip=true"
+      - name: Build and Test with Maven
+        run: ./mvnw clean verify -B -V --no-transfer-progress -Dlicense.skip=true
 
       - name: Run Checkov (IaC security scan)
         uses: bridgecrewio/checkov-action@master
@@ -44,3 +38,17 @@ jobs:
         with:
           scan-type: fs
           scan-ref: .
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/my-image-name:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-image-name:latest
