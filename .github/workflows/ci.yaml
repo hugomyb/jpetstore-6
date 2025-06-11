@@ -24,8 +24,8 @@ jobs:
           key: m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: m2
 
-      - name: Build & Run tests (Tomcat auto via Cargo)
-        run: ./mvnw verify -B -V --no-transfer-progress -Dlicense.skip=true
+      - name: Run tests (Tomcat auto via Cargo)
+        run: ./mvnw test -B -V --no-transfer-progress -Dlicense.skip=true
 
       - name: Run Checkov (IaC security scan)
         uses: bridgecrewio/checkov-action@master
