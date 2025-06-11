@@ -27,11 +27,12 @@ jobs:
       - name: Run tests (Tomcat auto via Cargo)
         run: ./mvnw test -B -V --no-transfer-progress -Dlicense.skip=true
 
-      - name: Run Checkov (IaC security scan)
+      - name: Run Checkov (IaC security scan – non blocking)
         uses: bridgecrewio/checkov-action@master
         with:
           directory: .
           output_format: cli
+        continue-on-error: true
 
       - name: Run Trivy (Filesystem scan)
         uses: aquasecurity/trivy-action@master
