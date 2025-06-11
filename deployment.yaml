@@ -12,13 +12,16 @@ spec:
       labels:
         app: petshop
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsUser: 1000
         runAsNonRoot: true
         fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: petshop
-          image: smontri/petshop:1.0.0
+          image: smontri/petshop:1.0.0  # ne pas utiliser ":latest"
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -31,6 +34,7 @@ spec:
               memory: "256Mi"
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
