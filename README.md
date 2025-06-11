@@ -1,84 +1,63 @@
-MyBatis JPetStore
-=================
+# CI/CD – JPetStore avec GitHub Actions
 
-[![Java CI](https://github.com/mybatis/jpetstore-6/actions/workflows/ci.yaml/badge.svg)](https://github.com/mybatis/jpetstore-6/actions/workflows/ci.yaml)
-[![Container Support](https://github.com/mybatis/jpetstore-6/actions/workflows/support.yaml/badge.svg)](https://github.com/mybatis/jpetstore-6/actions/workflows/support.yaml)
-[![Coverage Status](https://coveralls.io/repos/github/mybatis/jpetstore-6/badge.svg?branch=master)](https://coveralls.io/github/mybatis/jpetstore-6?branch=master)
-[![License](https://img.shields.io/:license-apache-brightgreen.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+Ce projet utilise une pipeline CI/CD complète avec GitHub Actions pour tester, analyser, construire et publier automatiquement le projet Java.
 
-![mybatis-jpetstore](https://mybatis.org/images/mybatis-logo.png)
+---
 
-JPetStore 6 is a full web application built on top of MyBatis 3, Spring 5 and Stripes.
+## ✅ Étapes automatisées dans la CI
 
-Essentials
-----------
+1. **Checkout du code**
+2. **Installation de Java (JDK 17 via Zulu)**
+3. **Cache du répertoire Maven `.m2`**
+4. **Exécution des tests Maven (`mvn test`) avec serveur Tomcat lancé via Cargo**
+5. **Compilation (`mvn compile`) pour SonarCloud**
+6. **Analyse de code statique avec SonarCloud**
+7. **Analyse sécurité de l'IaC avec Checkov (non bloquant)**
+8. **Scan de vulnérabilités fichiers avec Trivy**
+9. **Build Docker de l'application**
+10. **Push de l'image sur Docker Hub**
 
-* [See the docs](http://www.mybatis.org/jpetstore-6)
+---
 
-## Other versions that you may want to know about
+## 🐛 Problèmes rencontrés
 
-- JPetstore on top of Spring, Spring MVC, MyBatis 3, and Spring Security https://github.com/making/spring-jpetstore
-- JPetstore with Vaadin and Spring Boot with Java Config https://github.com/igor-baiborodine/jpetstore-6-vaadin-spring-boot
-- JPetstore on MyBatis Spring Boot Starter https://github.com/kazuki43zoo/mybatis-spring-boot-jpetstore
+### ❌ Tests qui échouaient dans GitHub Actions
+- **Cause** : `mvn verify` arrêtait Tomcat **avant** que Selenide exécute les tests.
+- **Fix** : utilisation directe de `mvn test`, qui laisse Cargo actif.
 
-## Run on Application Server
-Running JPetStore sample under Tomcat (using the [cargo-maven2-plugin](https://codehaus-cargo.github.io/cargo/Maven2+plugin.html)).
+### ❌ Échec de l’analyse SonarCloud
+- **Cause** : erreur `sonar.java.binaries missing` car les `.class` n’étaient pas présents.
+- **Fix** : ajout d’une étape `mvn compile` et propriété `-Dsonar.java.binaries=target`.
 
-- Clone this repository
+### ❌ `sonar.login` déprécié
+- **Fix** : remplacement par `sonar.token`.
 
-  ```
-  $ git clone https://github.com/mybatis/jpetstore-6.git
-  ```
+### ❌ Checkov bloquait la CI
+- **Fix** : ajout de `continue-on-error: true` pour rendre Checkov non bloquant.
 
-- Build war file
+### ❌ Avertissement sur l’action Sonar dépréciée
+- **Fix** : remplacement de `sonarcloud-github-action` par `sonarqube-scan-action@v5.0.0`.
 
-  ```
-  $ cd jpetstore-6
-  $ ./mvnw clean package
-  ```
+---
 
-- Startup the Tomcat server and deploy web application
+## 🔐 Secrets GitHub requis
 
-  ```
-  $ ./mvnw cargo:run -P tomcat90
-  ```
+| Secret                | Description                                |
+|-----------------------|--------------------------------------------|
+| `SONAR_TOKEN`         | Token personnel SonarCloud                 |
+| `SONAR_PROJECT_KEY`   | Clé unique du projet SonarCloud            |
+| `SONAR_ORG`           | Nom de l’organisation SonarCloud           |
+| `DOCKERHUB_USERNAME`  | Nom d'utilisateur Docker Hub               |
+| `DOCKERHUB_TOKEN`     | Token d’accès Docker Hub (ou mot de passe) |
 
-  > Note:
-  >
-  > We provide maven profiles per application server as follow:
-  >
-  > | Profile        | Description |
-  > | -------------- | ----------- |
-  > | tomcat90       | Running under the Tomcat 9.0 |
-  > | tomcat85       | Running under the Tomcat 8.5 |
-  > | tomee80        | Running under the TomEE 8.0(Java EE 8) |
-  > | tomee71        | Running under the TomEE 7.1(Java EE 7) |
-  > | wildfly26      | Running under the WildFly 26(Java EE 8) |
-  > | wildfly13      | Running under the WildFly 13(Java EE 7) |
-  > | liberty-ee8    | Running under the WebSphere Liberty(Java EE 8) |
-  > | liberty-ee7    | Running under the WebSphere Liberty(Java EE 7) |
-  > | jetty          | Running under the Jetty 9 |
-  > | glassfish5     | Running under the GlassFish 5(Java EE 8) |
-  > | glassfish4     | Running under the GlassFish 4(Java EE 7) |
-  > | resin          | Running under the Resin 4 |
+---
 
-- Run application in browser http://localhost:8080/jpetstore/ 
-- Press Ctrl-C to stop the server.
+## 📦 Docker
 
-## Run on Docker
-```
-docker build . -t jpetstore
-docker run -p 8080:8080 jpetstore
-```
-or with Docker Compose:
-```
-docker compose up -d
-```
-
-## Try integration tests
-
-Perform integration tests for screen transition.
+L’image est construite à chaque push et publiée automatiquement sur Docker Hub :
 
 ```
-$ ./mvnw clean verify -P tomcat90
+docker pull <utilisateur_dockerhub>/hugo-jpetstore:latest
 ```
+
+---
